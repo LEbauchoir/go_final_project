@@ -45,7 +45,7 @@ func TaskAddPOST(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if len(task.Repeat) > 0 {
-			if !strings.HasPrefix(task.Repeat, "d ") && task.Repeat != "y" {
+			if !(strings.HasPrefix(task.Repeat, "d ") || task.Repeat == "y") {
 				http.Error(w, `{"error":"Неверное значение для repeat"}`, http.StatusBadRequest)
 				log.Printf("Error: Неверное значение для repeat: %v", task.Repeat) // Лог
 				return
