@@ -72,21 +72,20 @@ func InitDb() (*DbHelper, error) {
 }
 
 func (d *DbHelper) createTables() error {
-	_, err := d.Db.Exec(createTableSQL)
-	if err != nil {
-		return err
-	}
-	_, err = d.Db.Exec(createIndexSQL)
-	if err != nil {
-		return err
-	}
-	_, err = d.Db.Exec(createSchedulerTableSQL)
-	if err != nil {
-		return err
-	}
-	_, err = d.Db.Exec("INSERT INTO scheduler (id, title, description, due_date, completed) SELECT id, title, description, due_date, completed FROM tasks")
+	queryCreate := `
+		CREATE TABLE IF NOT EXISTS scheduler (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+			date CHAR(8) NOT NULL DEFAULT "",
+			title TEXT NOT NULL DEFAULT "",
+			comment TEXT NOT NULL DEFAULT "",
+			repeat VARCHAR(128) NOT NULL DEFAULT ""
+		);
+		CREATE INDEX IF NOT EXISTS date_index ON scheduler (date);
+	`
+	_, err := d.Db.Exec(queryCreate)
 	return err
 }
+
 func (d *DbHelper) checkTableExists(tableName string) error {
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name=?;`
 	var name string
