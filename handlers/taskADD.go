@@ -62,8 +62,12 @@ func TaskAddPOST(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		if task.Date < time.Now().Format(config.DateForm) {
-			task.Date = time.Now().Format(config.DateForm)
+		_, err := time.Parse(config.DateForm, task.Date)
+		if err != nil {
+			errMsg := `{"error":"Дата указана в неверном формате"}`
+			http.Error(w, errMsg, http.StatusBadRequest)
+			log.Printf("Error: Дата указана в неверном формате: %v", task.Date)
+			return
 		}
 
 	}

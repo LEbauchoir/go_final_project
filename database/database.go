@@ -16,7 +16,7 @@ var createTableSQL string
 var createIndexSQL string
 
 func InitDb() (*DbHelper, error) {
-	appPath, err := os.Executable()
+	appPath, err := os.Getwd()
 	if err != nil {
 		return nil, err
 	}

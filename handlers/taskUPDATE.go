@@ -76,7 +76,7 @@ func TaskUpdatePUT(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if len(task.Repeat) > 0 {
-			if !strings.HasPrefix(task.Repeat, "d ") && task.Repeat != "y" {
+			if !(strings.HasPrefix(task.Repeat, "d ") || task.Repeat == "y") {
 				http.Error(w, `{"error":"Неверное значение для repeat"}`, http.StatusBadRequest)
 				log.Printf("Error: Неверное значение для repeat: %v", task.Repeat)
 				return
@@ -93,10 +93,13 @@ func TaskUpdatePUT(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		if task.Date < time.Now().Format(config.DateForm) {
-			task.Date = time.Now().Format(config.DateForm)
+		_, err := time.Parse(config.DateForm, task.Date)
+		if err != nil {
+			errMsg := `{"error":"Дата указана в неверном формате"}`
+			http.Error(w, errMsg, http.StatusBadRequest)
+			log.Printf("Error: Дата указана в неверном формате: %v", task.Date)
+			return
 		}
-
 	}
 
 	if err := dbHelper.UpdateTask(task); err != nil {

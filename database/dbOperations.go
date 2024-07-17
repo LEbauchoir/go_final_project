@@ -10,6 +10,12 @@ import (
 	"github.com/LEbauchoir/go_final_project/models"
 )
 
+func NewDbHelper(db *sql.DB) *DbHelper {
+	return &DbHelper{
+		Db: db,
+	}
+}
+
 func (d *DbHelper) AddTask(t models.Task) (string, error) {
 	query := "INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)"
 	res, err := d.Db.Exec(query, t.Date, t.Title, t.Comment, t.Repeat)
