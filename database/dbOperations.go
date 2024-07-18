@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -20,7 +21,7 @@ func (d *DbHelper) AddTask(t models.Task) (string, error) {
 	query := "INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)"
 	res, err := d.Db.Exec(query, t.Date, t.Title, t.Comment, t.Repeat)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error while inserting task %+v: %w", t, err)
 	}
 
 	id, err := res.LastInsertId()
@@ -41,7 +42,7 @@ func (d *DbHelper) DeleteTask(taskID int) error {
 
 	value, err := result.RowsAffected()
 	if value == 0 {
-		return fmt.Errorf("ошибка выполнения запроса удаления к БД")
+		return fmt.Errorf("не получилось удалить задачу %d так как ее нет в БД", taskID)
 	}
 
 	return err
@@ -54,7 +55,7 @@ func (d *DbHelper) ReadTaskById(id int) (models.Task, error) {
 	var task models.Task
 	err := row.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return models.Task{}, fmt.Errorf("задача с id %v не найдена", id)
 		}
 		log.Printf("ошибка выполнения запроса к БД: %v", err)
@@ -78,7 +79,7 @@ func (d *DbHelper) TasksShow() ([]models.Task, error) {
 	query := fmt.Sprintf("SELECT id, date, title, comment, repeat FROM scheduler ORDER BY date LIMIT %d", config.LimitReturnRows)
 	rows, err := d.Db.Query(query)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка выполнения запроса к БД: %v", err)
+		return nil, fmt.Errorf("ошибка выполнения запроса к БД: %w", err)
 	}
 	defer rows.Close()
 

@@ -33,6 +33,7 @@ func NextDateGETHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 	fmt.Fprint(w, nextDate)
 }
 
