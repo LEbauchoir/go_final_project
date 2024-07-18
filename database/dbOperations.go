@@ -25,7 +25,7 @@ func (d *DbHelper) AddTask(t models.Task) (string, error) {
 	}
 	id, err := res.LastInsertId()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error while inserting task %+v: %w", t, err)
 	}
 
 	return strconv.FormatInt(id, 10), nil
