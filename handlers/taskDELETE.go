@@ -29,6 +29,7 @@ func TaskDELETE(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := map[string]interface{}{}
+	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(resp)
 	if err != nil {
 		log.Printf("Ошибка при ответе: %v", err)

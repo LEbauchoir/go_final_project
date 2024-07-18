@@ -16,21 +16,10 @@ func ReadTaskByIdGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	maxID, err := dbHelper.GetMaxID()
-	if err != nil {
-		http.Error(w, `{"error":"Неверный формат Id"}`, http.StatusBadRequest)
-		log.Println("Error: Неверный формат Id")
-		return
-	}
 	newID, err := strconv.Atoi(id)
 	if err != nil {
 		http.Error(w, `{"error":"не парсится ID"}`, http.StatusBadRequest)
 		log.Println("Error: не парсится ID")
-		return
-	}
-	if newID > maxID {
-		http.Error(w, `{"error":"новый ID больше, чем строк в БД"}`, http.StatusBadRequest)
-		log.Printf("Error: новый ID больше, чем строк в БД, %v", newID)
 		return
 	}
 

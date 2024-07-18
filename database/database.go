@@ -3,6 +3,8 @@ package database
 import (
 	"database/sql"
 	_ "embed"
+	"errors"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -11,31 +13,6 @@ import (
 type DbHelper struct {
 	Db *sql.DB
 }
-
-var createTableSQL = `
-CREATE TABLE IF NOT EXISTS tasks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT,
-    due_date DATE,
-    completed BOOLEAN NOT NULL CHECK (completed IN (0, 1))
-    date DATE
-);
-`
-
-var createIndexSQL = `
-CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks (due_date);
-`
-
-var createSchedulerTableSQL = `
-CREATE TABLE IF NOT EXISTS scheduler (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT,
-    due_date DATE,
-    completed BOOLEAN NOT NULL CHECK (completed IN (0, 1))
-);
-`
 
 func InitDb() (*DbHelper, error) {
 	appPath, err := os.Getwd()
@@ -48,6 +25,14 @@ func InitDb() (*DbHelper, error) {
 	var install bool
 	if os.IsNotExist(err) {
 		install = true
+	}
+
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			install = true
+		} else {
+			return nil, fmt.Errorf("can't check db file: %w", err)
+		}
 	}
 
 	db, err := sql.Open("sqlite", dbFile)
@@ -91,7 +76,7 @@ func (d *DbHelper) checkTableExists(tableName string) error {
 	var name string
 	err := d.Db.QueryRow(query, tableName).Scan(&name)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			log.Printf("Таблица %s не существует", tableName)
 			return d.createTables()
 		}

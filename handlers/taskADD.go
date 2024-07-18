@@ -19,19 +19,19 @@ func TaskAddPOST(w http.ResponseWriter, r *http.Request) {
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Printf("Error reading request body: %v", err) // Лог
+		log.Printf("Error reading request body: %v", err)
 		return
 	}
 
 	if err = json.Unmarshal(buf.Bytes(), &task); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Printf("Error unmarshaling JSON: %v", err) // Лог
+		log.Printf("Error unmarshaling JSON: %v", err)
 		return
 	}
 
 	if len(task.Title) == 0 {
 		http.Error(w, `{"error":"Заголовок пуст"}`, http.StatusBadRequest)
-		log.Println("Error: Заголовок пуст") // Лог
+		log.Println("Error: Заголовок пуст")
 		return
 	}
 
@@ -40,14 +40,14 @@ func TaskAddPOST(w http.ResponseWriter, r *http.Request) {
 	} else {
 		if _, err := time.Parse(config.DateForm, task.Date); err != nil {
 			http.Error(w, `{"error":"Дата указана в неверном формате"}`, http.StatusBadRequest)
-			log.Printf("Error: Дата указана в неверном формате: %v", task.Date) // Лог
+			log.Printf("Error: Дата указана в неверном формате: %v", task.Date)
 			return
 		}
 
 		if len(task.Repeat) > 0 {
 			if !(strings.HasPrefix(task.Repeat, "d ") || task.Repeat == "y") {
 				http.Error(w, `{"error":"Неверное значение для repeat"}`, http.StatusBadRequest)
-				log.Printf("Error: Неверное значение для repeat: %v", task.Repeat) // Лог
+				log.Printf("Error: Неверное значение для repeat: %v", task.Repeat)
 				return
 			}
 
@@ -55,7 +55,7 @@ func TaskAddPOST(w http.ResponseWriter, r *http.Request) {
 			nextDate, err := NextDate(now, task.Date, task.Repeat)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
-				log.Printf("Error in NextDate: %v", err) // Лог
+				log.Printf("Error in NextDate: %v", err)
 				return
 			} else if task.Date < time.Now().Format(config.DateForm) {
 				task.Date = nextDate
@@ -74,21 +74,21 @@ func TaskAddPOST(w http.ResponseWriter, r *http.Request) {
 
 	if dbHelper == nil {
 		http.Error(w, `{"error":"DBHelper не инициализирован"}`, http.StatusInternalServerError)
-		log.Println("Ошибка: DBHelper не инициализирован") // Лог
+		log.Println("Ошибка: DBHelper не инициализирован")
 		return
 	}
 
 	lastId, err := dbHelper.AddTask(task)
 	if err != nil {
 		http.Error(w, `{"error":"ошибка добавления задачи в БД"}`, http.StatusInternalServerError)
-		log.Printf("Ошибка добавления задачи в DB: %v", err) // Лог
+		log.Printf("Ошибка добавления задачи в DB: %v", err)
 		return
 	}
 
 	taskId, err := json.Marshal(models.ResponseTaskId{ID: lastId})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Printf("Error marshaling response: %v", err) // Лог
+		log.Printf("Error marshaling response: %v", err)
 		return
 	}
 
