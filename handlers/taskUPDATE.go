@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -34,7 +35,29 @@ func TaskUpdatePUT(w http.ResponseWriter, r *http.Request) {
 		log.Println("Error: Не указан идентификатор задачи")
 		return
 	}
+	maxID, err := dbHelper.GetMaxID()
+	if _, err := strconv.Atoi(task.ID); err != nil {
+		http.Error(w, `{"error":"Неверный формат Id"}`, http.StatusBadRequest)
+		log.Println("Error: Неверный формат Id")
+		return
+	}
 
+	if err != nil {
+		http.Error(w, `{"error":"Неверный формат Id"}`, http.StatusBadRequest)
+		log.Println("Error: Неверный формат Id")
+		return
+	}
+	newID, err := strconv.Atoi(task.ID)
+	if err != nil {
+		http.Error(w, `{"error":"не парсится ID"}`, http.StatusBadRequest)
+		log.Println("Error: не парсится ID")
+		return
+	}
+	if newID > maxID {
+		http.Error(w, `{"error":"новый ID больше, чем строк в БД"}`, http.StatusBadRequest)
+		log.Printf("Error: новый ID больше, чем строк в БД, %v", newID)
+		return
+	}
 	if len(task.Title) == 0 {
 		http.Error(w, `{"error":"Заголовок пуст"}`, http.StatusBadRequest)
 		log.Println("Error: Заголовок пуст")

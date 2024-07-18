@@ -21,9 +21,8 @@ func (d *DbHelper) AddTask(t models.Task) (string, error) {
 	query := "INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)"
 	res, err := d.Db.Exec(query, t.Date, t.Title, t.Comment, t.Repeat)
 	if err != nil {
-		return "", fmt.Errorf("error while inserting task %+v: %w", t, err)
+		return "", err
 	}
-
 	id, err := res.LastInsertId()
 	if err != nil {
 		return "", err

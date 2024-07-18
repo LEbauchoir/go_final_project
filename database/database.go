@@ -23,10 +23,6 @@ func InitDb() (*DbHelper, error) {
 	_, err = os.Stat(dbFile)
 
 	var install bool
-	if os.IsNotExist(err) {
-		install = true
-	}
-
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			install = true
@@ -39,23 +35,18 @@ func InitDb() (*DbHelper, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	dbHelper := &DbHelper{Db: db}
-
 	if install {
 		if err := dbHelper.createTables(); err != nil {
 			return nil, err
 		}
 	}
-
 	// Проверка наличия таблицы tasks
 	if err := dbHelper.checkTableExists("tasks"); err != nil {
 		return nil, err
 	}
-
 	return dbHelper, nil
 }
-
 func (d *DbHelper) createTables() error {
 	queryCreate := `
 		CREATE TABLE IF NOT EXISTS scheduler (
@@ -70,12 +61,12 @@ func (d *DbHelper) createTables() error {
 	_, err := d.Db.Exec(queryCreate)
 	return err
 }
-
 func (d *DbHelper) checkTableExists(tableName string) error {
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name=?;`
 	var name string
 	err := d.Db.QueryRow(query, tableName).Scan(&name)
 	if err != nil {
+
 		if errors.Is(err, sql.ErrNoRows) {
 			log.Printf("Таблица %s не существует", tableName)
 			return d.createTables()
